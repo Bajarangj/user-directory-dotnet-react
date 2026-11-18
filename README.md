@@ -1,89 +1,99 @@
 # User Directory
 
-A .NET 8 User Directory API designed for a separately developed React frontend. It provides authenticated CRUD operations for users, SQLite persistence, Swagger documentation, and Keycloak OAuth2/OIDC JWT validation.
+Full-stack .NET 8 user directory with ASP.NET Core, React/Vite, SQLite, Docker Compose, and Keycloak.
 
-## Structure
+## Docker quick start
 
-- `UserDirectory.API` - HTTP controllers, Swagger, CORS, authentication, and application composition.
-- `UserDirectory.Application` - user DTOs, validation, use cases, and repository abstractions.
-- `UserDirectory.Domain` - the `User` entity and domain behavior.
-- `UserDirectory.Infrastructure` - EF Core SQLite DbContext, repository, and dependency registration.
-- `UserDirectory.Tests` - application service unit tests.
-
-The dependency direction points inward: API and Infrastructure depend on Application, Application depends on Domain, and Domain has no project dependencies.
-
-## Run locally
-
-Install the .NET 8 SDK and runtime, then run:
+From the repository root:
 
 ```powershell
-dotnet restore user-directory-dotnet.slnx
-dotnet run --project UserDirectory.API/UserDirectory.API.csproj
-```
-
-Swagger is available at `https://localhost:7064/swagger` or `http://localhost:5296/swagger`. The SQLite file defaults to `./data/app.db` in Development and `/data/app.db` in the container. The database directory is created by the application when it starts.
-
-The anonymous readiness endpoint is `GET /health`.
-
-## Run the complete stack with Docker
-
-The single root `Dockerfile` builds both the .NET API and React frontend. Start the entire stack with:
-
-```powershell
+docker compose down --remove-orphans
 docker compose up --build
-```
+``` 
 
-This starts:
+URLs: frontend http://localhost:5173; API http://localhost:8080; Swagger http://localhost:8080/swagger; health http://localhost:8080/health; Keycloak http://localhost:8082.
 
-- React frontend: `http://localhost:5173`
-- API: `http://localhost:8080`
-- Swagger: `http://localhost:8080/swagger`
-- Health: `http://localhost:8080/health`
-The frontend runs using the Vite development server and uses the Docker build arguments configured in `docker-compose.yml`.
+## Demo login
 
-## Keycloak
+Keycloak realm: user-directory
 
-The Docker Compose setup imports `keycloak/user-directory-realm.json` automatically. It creates:
+```text
+Application: demo / demo123!
+Keycloak admin: admin / admin
+``` 
 
-- Realm: `user-directory`
-- API audience: `user-directory-api`
-- React public client: `user-directory-frontend`
-- Development user: `demo` / `demo123!`
+Open http://localhost:5173 and sign in with demo / demo123!. These credentials are for local demo use only.
 
-The Keycloak admin console is available at `http://localhost:8082` with `admin` / `admin`.
+## Authentication
 
-- `Keycloak__Authority` - Keycloak realm issuer URL.
-- `Keycloak__Audience` - expected JWT audience.
-- `Keycloak__RequireHttpsMetadata` - set to `false` for local development.
+The React application uses keycloak-js with Authorization Code Flow and PKCE (S256). Frontend client: user-directory-frontend. API audience: user-directory-api. Requests send Authorization: Bearer <access-token>. The API validates JWT signature, issuer, audience, and expiration. Browser issuer: http://localhost:8082/realms/user-directory. Docker discovery: http://keycloak:8080/realms/user-directory.
 
-All `/api/users` endpoints require a bearer token. The React client sends it as `Authorization: Bearer <token>`. CORS allows `http://localhost:5173` by default.
+## Architecture
+
+- UserDirectory.API: controllers, Swagger, CORS, authentication, and composition.
+- UserDirectory.Application: DTOs, validation, services, and repository abstractions.
+- UserDirectory.Domain: User entity and domain model.
+- UserDirectory.Infrastructure: EF Core SQLite DbContext and repositories.
+- UserDirectory.Tests: xUnit tests.
+- UserDirectory.Web: React pages, routing, Keycloak, and API client.
+- keycloak/user-directory-realm.json: imported local realm.
 
 ## API
 
-- `GET /api/users`
-- `GET /api/users/{id}`
-- `POST /api/users`
-- `PUT /api/users/{id}`
-- `DELETE /api/users/{id}`
+- GET /health - anonymous health check.
+- GET /api/users - list users.
+- GET /api/users/{id} - get a user.
+- POST /api/users - create a user.
+- PUT /api/users/{id} - update a user.
+- DELETE /api/users/{id} - delete a user.
 
-Create and update requests require a name of 2–100 characters, age from 0–120, required city and state, and a pincode of 4–10 characters.
+All user endpoints require authentication. Name is 2-100 characters, age is 0-120, city and state are required, and pincode is 4-10 characters.
 
-## Docker
+## Technologies and packages
 
-Start the API and frontend with:
+Backend: .NET 8, ASP.NET Core, EF Core SQLite 8.0.19, Microsoft.AspNetCore.Authentication.JwtBearer 8.0.19, Swashbuckle.AspNetCore 6.6.2.
+
+Frontend: React 19.0.0, React DOM 19.0.0, React Router DOM 6.28.1, keycloak-js 26.2.2, Vite 6.0.7, TypeScript 5.7.2, @vitejs/plugin-react 4.3.4.
+
+Tests: xUnit 2.9.2, Microsoft.NET.Test.Sdk 17.11.1, xunit.runner.visualstudio 2.8.2.
+
+Infrastructure: Docker Compose, Keycloak 25.0, and SQLite.
+
+## Persistence
+
+SQLite is stored at /data/app.db and persisted in the user-directory-data Docker volume. Reset demo data with:
 
 ```powershell
+docker compose down -v
 docker compose up --build
-```
+``` 
 
-The API is exposed on `http://localhost:8080`; Keycloak is exposed on `http://localhost:8082`. The SQLite database is stored in the `user-directory-data` Docker volume.
+## Configuration
 
-## Tests
+Frontend defaults are in UserDirectory.Web/.env.example: VITE_API_URL, VITE_KEYCLOAK_URL, VITE_KEYCLOAK_REALM, and VITE_KEYCLOAK_CLIENT_ID.
+
+API Docker settings: Keycloak__Authority=http://keycloak:8080/realms/user-directory; Keycloak__Issuer=http://localhost:8082/realms/user-directory; Keycloak__Audience=user-directory-api; Keycloak__RequireHttpsMetadata=false.
+
+HTTP is for local development only. Production requires HTTPS and production secrets.
+
+## Validation
 
 ```powershell
+dotnet build user-directory-dotnet.slnx
 dotnet test user-directory-dotnet.slnx
-```
+docker compose config
+``` 
 
-## Development disclosure
+For frontend validation from UserDirectory.Web: npm install; npm run build.
 
-The implementation uses .NET 8, ASP.NET Core, EF Core SQLite, Swashbuckle, xUnit, Docker, and Keycloak JWT authentication. AI assistance was used during development through GitHub Copilot.
+## Troubleshooting
+
+```powershell
+docker compose down --remove-orphans
+docker compose up --build --force-recreate
+docker compose logs -f keycloak
+``` 
+
+For invalid_token, confirm iss is http://localhost:8082/realms/user-directory and aud is user-directory-api. For frontend 401 responses, confirm login completed and the request contains a bearer access token.
+
+The root README.md is the authoritative documentation.

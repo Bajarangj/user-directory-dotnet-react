@@ -39,8 +39,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         options.Authority = keycloak["Authority"];
         options.RequireHttpsMetadata = keycloak.GetValue("RequireHttpsMetadata", false);
+        options.RefreshOnIssuerKeyNotFound = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            ValidIssuer = keycloak["Issuer"],
+            ValidateIssuer = true,
             ValidAudience = keycloak["Audience"],
             ValidateAudience = true
         };
