@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>user_directory_dotnet</RootNamespace>
+    <UserSecretsId>6e378466-2644-4d85-affd-ec5b89fe6624</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>.</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="UserDirectory.API\UserDirectory.API.csproj" />
+    <None Include="UserDirectory.Application\UserDirectory.Application.csproj" />
+    <None Include="UserDirectory.Domain\UserDirectory.Domain.csproj" />
+    <None Include="UserDirectory.Infrastructure\UserDirectory.Infrastructure.csproj" />
+    <None Include="UserDirectory.Tests\UserDirectory.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+</Project>

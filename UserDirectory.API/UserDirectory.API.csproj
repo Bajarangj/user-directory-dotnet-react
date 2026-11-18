@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+	<TargetFramework>net8.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<RootNamespace>UserDirectory.API</RootNamespace>
+	<UserSecretsId>6e378466-2644-4d85-affd-ec5b89fe6624</UserSecretsId>
+	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<DockerfileContext>..</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\UserDirectory.Application\UserDirectory.Application.csproj" />
+	<ProjectReference Include="..\UserDirectory.Domain\UserDirectory.Domain.csproj" />
+	<ProjectReference Include="..\UserDirectory.Infrastructure\UserDirectory.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.19" />
+	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+  </ItemGroup>
+</Project>
